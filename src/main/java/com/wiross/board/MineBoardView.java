@@ -65,8 +65,7 @@ public class MineBoardView extends JPanel implements ActionListener {
         };
         mineField.setForeground(textColor);
 
-//        if (0 == bombsAround && checkNumber < 10) {
-        if (0 == bombsAround && checkNumber < 1) {
+        if (0 == bombsAround && checkNumber < 20) {
             for (int a = x - 1; a < x + 2; ++a) {
                 for (int b = y - 1; b < y + 2; ++b) {
                     if (a >= 0 && b >= 0 && a < initX && b < initY) {
