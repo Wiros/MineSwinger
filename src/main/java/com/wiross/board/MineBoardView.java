@@ -1,5 +1,6 @@
 package com.wiross.board;
 
+import com.wiross.logic.GameState;
 import com.wiross.logic.MineBoardState;
 import com.wiross.logic.MineBoardStateImpl;
 
@@ -9,31 +10,40 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 public class MineBoardView extends JPanel implements MouseListener {
-    private final List<MineField> mineFields;
+    private List<MineField> mineFields;
     private final int initX;
     private final int initY;
-    private final MineBoardState mineBoardState;
+    private MineBoardState mineBoardState;
+    private final Consumer<GameState> stateChangeConsumer;
 
-    public MineBoardView() {
-        this(9, 9);
+    public MineBoardView(Consumer<GameState> stateChangeConsumer) {
+        this(9, 9, stateChangeConsumer);
     }
 
-    public MineBoardView(int x, int y) {
+    public MineBoardView(int x, int y, Consumer<GameState> stateChangeConsumer) {
         super();
-        initX = x;
-        initY = y;
-        mineFields = new ArrayList<>(x * y);
+        this.initX = x;
+        this.initY = y;
+        this.stateChangeConsumer = stateChangeConsumer;
+
+        initField(x, y);
+    }
+
+    private void initField(int x, int y) {
+        this.mineFields = new ArrayList<>(x * y);
+
         IntStream.range(0, x).forEach(nx ->
                 IntStream.range(0, y).forEach(ny -> mineFields.add(new MineField(nx, ny))));
 
-        setLayout(new GridLayout(initY, initX, 1, 1));
+        setLayout(new GridLayout(y, x, 1, 1));
         mineFields.forEach(button -> button.addMouseListener(this));
         mineFields.forEach(this::add);
 
-        mineBoardState = new MineBoardStateImpl(x, y, 10);
+        this.mineBoardState = new MineBoardStateImpl(x, y, 10, stateChangeConsumer);
     }
 
     public MineField getField(int x, int y) {
@@ -89,5 +99,10 @@ public class MineBoardView extends JPanel implements MouseListener {
     @Override
     public void mouseExited(MouseEvent e) {
         // empty
+    }
+
+    public void reset(int x, int y, int bombs, Consumer<GameState> stateChangeConsumer) {
+        mineBoardState = new MineBoardStateImpl(x, y, bombs, stateChangeConsumer);
+        mineFields.forEach(field -> new MineField(field.getXPos(), field.getYPos()));
     }
 }

@@ -9,7 +9,7 @@ import java.awt.*;
 public class MineField extends JButton {
     private static final String INIT_TEXT = "?";
     private static final String FLAG_TEXT = "v/";
-    private static final String BOMB_TEXT = "X";
+    private static final String BOMB_TEXT = "\uD83D\uDCA5";
     private static final String EMPTY_TEXT = "";
     private static final Color INIT_COLOR = Color.LIGHT_GRAY;
     private static final Color FLAG_BG_COLOR = Color.BLUE;
@@ -43,6 +43,7 @@ public class MineField extends JButton {
         String text = bombsAround == -1 ? BOMB_TEXT : bombsAround == 0 ? EMPTY_TEXT : Integer.toString(bombsAround);
         if (bombsAround == -1) {
             setBackground(Color.RED);
+            setForeground(null);
         } else {
             setBackground(Color.WHITE);
         }

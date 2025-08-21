@@ -3,6 +3,7 @@ package com.wiross.logic;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -12,15 +13,17 @@ public class MineBoardStateImpl implements MineBoardState {
     private final int initX;
     private final int initY;
     private final int initBombs;
+    private final Consumer<GameState> stateChangeConsumer;
     private int leftFields;
     private GameState gameState;
 
-    public MineBoardStateImpl(int x, int y, int bombs) {
+    public MineBoardStateImpl(int x, int y, int bombs, Consumer<GameState> stateChangeConsumer) {
         this.initX = x;
         this.initY = y;
         this.initBombs = bombs;
         this.leftFields = x * y;
         this.gameState = GameState.NOT_STARTED;
+        this.stateChangeConsumer = stateChangeConsumer;
 
         List<Integer> intList = IntStream.range(0, x * y).boxed().collect(Collectors.toList());
         Collections.shuffle(intList);
@@ -52,6 +55,7 @@ public class MineBoardStateImpl implements MineBoardState {
     }
 
     private void updateGameStateUncoveredBomb(boolean uncoveredBomb) {
+        GameState previousState = gameState;
         if (!gameState.hasEnded()) {
             --leftFields;
 
@@ -64,6 +68,10 @@ public class MineBoardStateImpl implements MineBoardState {
             } else if (leftFields == initBombs) {
                 gameState = GameState.WON;
             }
+        }
+
+        if (previousState != gameState) {
+            stateChangeConsumer.accept(gameState);
         }
     }
 

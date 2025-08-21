@@ -1,11 +1,11 @@
 package com.wiross;
 
 import com.wiross.board.MineBoardView;
+import com.wiross.panel.GamePanel;
 
 import javax.swing.*;
 
 public class MineSwinger extends JFrame {
-    private static final MineBoardView boardView = new MineBoardView();
 
 
     MineSwinger() {
@@ -15,7 +15,7 @@ public class MineSwinger extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        add(boardView);
+        add(new GamePanel());
         setVisible(true);
 
     }
