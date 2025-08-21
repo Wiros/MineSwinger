@@ -5,13 +5,13 @@ import com.wiross.logic.MineBoardStateImpl;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class MineBoardView extends JPanel implements ActionListener {
+public class MineBoardView extends JPanel implements MouseListener {
     private final List<MineField> mineFields;
     private final int initX;
     private final int initY;
@@ -28,9 +28,10 @@ public class MineBoardView extends JPanel implements ActionListener {
         mineFields = new ArrayList<>(x * y);
         IntStream.range(0, x).forEach(nx ->
                 IntStream.range(0, y).forEach(ny -> mineFields.add(new MineField(nx, ny))));
+
         setLayout(new GridLayout(initY, initX, 1, 1));
+        mineFields.forEach(button -> button.addMouseListener(this));
         mineFields.forEach(this::add);
-        mineFields.forEach(button -> button.addActionListener(this));
 
         mineBoardState = new MineBoardStateImpl(x, y, 10);
     }
@@ -39,41 +40,54 @@ public class MineBoardView extends JPanel implements ActionListener {
         return mineFields.get(initY * x + y);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() instanceof MineField mineField) {
-            checkField(mineField.getX(), mineField.getY(), mineField, 0);
-        }
-    }
 
-    private void checkField(int x, int y, MineField mineField, int checkNumber) {
-        int bombsAround = mineBoardState.countBombsAround(x, y);
-        String text = bombsAround == -1 ? "X" : bombsAround == 0 ? " " : Integer.toString(bombsAround);
-        if (bombsAround == -1) {
-            mineField.setBackground(Color.RED);
-        } else {
-            mineField.setBackground(Color.WHITE);
-        }
-        mineField.setText(text);
-        Color textColor = switch (bombsAround) {
-            case 1 -> Color.BLUE;
-            case 2 -> Color.GREEN;
-            case 3 -> Color.YELLOW;
-            case 4 -> Color.ORANGE;
-            case 5,6,7,8,9-> Color.RED;
-            default -> Color.BLACK;
-        };
-        mineField.setForeground(textColor);
+    private void clickedOnField(int x, int y, MineField mineField, int checkNumber) {
+        if (!mineBoardState.getGameState().hasEnded() && mineField.wasClickedBeforeOrChecked()) {
+            int bombsAround = mineBoardState.countBombsAroundAndUncover(x, y);
+            mineField.setAfterClick(bombsAround);
 
-        if (0 == bombsAround && checkNumber < 20) {
-            for (int a = x - 1; a < x + 2; ++a) {
-                for (int b = y - 1; b < y + 2; ++b) {
-                    if (a >= 0 && b >= 0 && a < initX && b < initY) {
-                        System.out.println(getField(a, b));
-                        checkField(a, b, getField(a, b), ++checkNumber);
+            if (0 == bombsAround && checkNumber < initX + initY) {
+                for (int a = x - 1; a < x + 2; ++a) {
+                    for (int b = y - 1; b < y + 2; ++b) {
+                        if (a >= 0 && b >= 0 && a < initX && b < initY) {
+                            clickedOnField(a, b, getField(a, b), 1 + checkNumber);
+                        }
                     }
                 }
             }
         }
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        if (e.getSource() instanceof MineField mineField) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                clickedOnField(mineField.getXPos(), mineField.getYPos(), mineField, 0);
+            } else if (SwingUtilities.isRightMouseButton(e)) {
+                if (!mineBoardState.getGameState().hasEnded()) {
+                    mineField.setUnsetFlag();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        // empty
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        // empty
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        // empty
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        // empty
     }
 }
