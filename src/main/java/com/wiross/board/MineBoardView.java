@@ -1,6 +1,5 @@
 package com.wiross.board;
 
-import com.wiross.logic.FieldValue;
 import com.wiross.logic.MineBoardState;
 import com.wiross.logic.MineBoardStateImpl;
 

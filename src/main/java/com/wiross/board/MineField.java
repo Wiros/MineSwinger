@@ -18,8 +18,4 @@ public class MineField extends JButton {
         setBorderPainted(true);
         setBorder(new LineBorder(Color.BLACK, 1, true));
     }
-
-    public void setClicked() {
-
-    }
 }
