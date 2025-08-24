@@ -35,11 +35,11 @@ public class MineBoardView extends JPanel implements MouseListener {
         this.limitOnCheckingEmpty = 2 * (x + y);
         this.gamePanelUpdateConsumer = gamePanelUpdateConsumer;
 
-        initField(x, y, bombs);
+        initField(x, y);
         reset(x, y, bombs, gamePanelUpdateConsumer);
     }
 
-    private void initField(int x, int y, int bombs) {
+    private void initField(int x, int y) {
         this.mineFields = new ArrayList<>(x * y);
 
         IntStream.range(0, x).forEach(nx ->

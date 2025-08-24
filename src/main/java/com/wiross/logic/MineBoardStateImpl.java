@@ -4,7 +4,6 @@ import com.wiross.panel.GamePanelUpdateEvent;
 import com.wiross.utilities.RandomProvider;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;

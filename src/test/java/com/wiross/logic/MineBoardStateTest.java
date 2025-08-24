@@ -80,7 +80,7 @@ class MineBoardStateTest {
         boolean result = ((MineBoardStateImpl)mineBoardState).isAround(0, 0, 0);
 
         // THEN
-        assertEquals(true, result);
+        assertTrue(result);
     }
 
     @Test
