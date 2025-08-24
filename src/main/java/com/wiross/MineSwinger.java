@@ -1,6 +1,5 @@
 package com.wiross;
 
-import com.wiross.board.MineBoardView;
 import com.wiross.panel.GamePanel;
 
 import javax.swing.*;

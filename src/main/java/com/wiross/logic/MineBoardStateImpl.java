@@ -1,5 +1,8 @@
 package com.wiross.logic;
 
+import com.wiross.panel.GamePanelUpdateEvent;
+import com.wiross.utilities.RandomProvider;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -8,35 +11,28 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class MineBoardStateImpl implements MineBoardState {
+    private final RandomProvider randomProvider;
     private final List<FieldValue> listMap = new ArrayList<>();
     private final List<Integer> countMap = new ArrayList<>();
     private final int initX;
     private final int initY;
     private final int initBombs;
-    private final Consumer<GameState> stateChangeConsumer;
+    private final Consumer<GamePanelUpdateEvent> stateChangeConsumer;
     private int leftFields;
     private GameState gameState;
+    boolean initialized;
 
-    public MineBoardStateImpl(int x, int y, int bombs, Consumer<GameState> stateChangeConsumer) {
+    public MineBoardStateImpl(int x, int y, int bombs, Consumer<GamePanelUpdateEvent> stateChangeConsumer, RandomProvider randomProvider) {
         this.initX = x;
         this.initY = y;
         this.initBombs = bombs;
         this.leftFields = x * y;
         this.gameState = GameState.NOT_STARTED;
         this.stateChangeConsumer = stateChangeConsumer;
+        this.initialized = false;
+        this.randomProvider = randomProvider;
 
-        List<Integer> intList = IntStream.range(0, x * y).boxed().collect(Collectors.toList());
-        Collections.shuffle(intList);
-        List<Integer> bombList = intList.stream().limit(bombs).sorted().toList();
-
-        IntStream.range(0, x * y)
-                .mapToObj(n -> bombList.contains(n) ? FieldValue.BOMB : FieldValue.EMPTY)
-                .forEach(listMap::add);
-        IntStream.range(0, x).forEach(nx ->
-                IntStream.range(0, y).forEach(ny ->
-                    countMap.add(countBombsAround(nx, ny))
-                )
-        );
+        stateChangeConsumer.accept(gameState);
     }
 
     public FieldValue getField(int x, int y) {
@@ -45,6 +41,10 @@ public class MineBoardStateImpl implements MineBoardState {
 
     @Override
     public Integer countBombsAroundAndUncover(int x, int y) {
+        if (! initialized) {
+            initializeBoardWithClick(x, y);
+            initialized = true;
+        }
         if (gameState.hasEnded()) {
             return null;
         } else {
@@ -52,6 +52,39 @@ public class MineBoardStateImpl implements MineBoardState {
             updateGameStateUncoveredBomb(-1 == returnValue);
             return returnValue;
         }
+    }
+
+    private void initializeBoardWithClick(int x, int y) {
+        List<Integer> intList = IntStream.range(0, initX * initY).boxed().collect(Collectors.toList());
+        intList = randomProvider.shuffle(intList);
+        List<Integer> bombList;
+
+        if (initX * initY < 9 + initBombs) {
+            bombList = intList.stream().limit(initBombs).sorted().toList();
+        } else {
+            bombList = intList.stream().filter(number -> !isAround(x, y, number)).limit(initBombs).sorted().toList();
+        }
+
+        IntStream.range(0, initX * initY)
+                .mapToObj(n -> bombList.contains(n) ? FieldValue.BOMB : FieldValue.EMPTY)
+                .forEach(listMap::add);
+        IntStream.range(0, initX).forEach(nx ->
+                IntStream.range(0, initY).forEach(ny ->
+                        countMap.add(countBombsAround(nx, ny))
+                )
+        );
+    }
+
+    public boolean isAround(int x, int y, int number) {
+        return initX * y + x == number ||
+                initX * (y - 1) + x == number ||
+                initX * (y + 1) + x == number ||
+                initX * y + (x - 1) == number ||
+                initX * y + (x + 1) == number ||
+                initX * (y - 1) + (x - 1) == number ||
+                initX * (y - 1) + (x + 1) == number ||
+                initX * (y + 1) + (x - 1) == number ||
+                initX * (y + 1) + (x + 1) == number;
     }
 
     private void updateGameStateUncoveredBomb(boolean uncoveredBomb) {

@@ -1,6 +1,8 @@
 package com.wiross.logic;
 
-public enum GameState {
+import com.wiross.panel.GamePanelUpdateEvent;
+
+public enum GameState implements GamePanelUpdateEvent {
     WON,
     LOST,
     IN_PROGRESS,

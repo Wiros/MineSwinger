@@ -12,6 +12,7 @@ public class MineField extends JButton {
     private static final String BOMB_TEXT = "\uD83D\uDCA5";
     private static final String EMPTY_TEXT = "";
     private static final Color INIT_COLOR = Color.LIGHT_GRAY;
+    private static final Color INIT_TEXT_COLOR = Color.BLACK;
     private static final Color FLAG_BG_COLOR = Color.BLUE;
 
     private final int xPos;
@@ -21,22 +22,25 @@ public class MineField extends JButton {
         super(INIT_TEXT);
         this.xPos = xPos;
         this.yPos = yPos;
-        setBackground(INIT_COLOR);
+        restartField();
     }
 
     public boolean wasClickedBeforeOrChecked() {
         return getText().equals(INIT_TEXT) || getText().equals(FLAG_TEXT);
     }
 
-    public void setUnsetFlag() {
+    public boolean setUnsetFlag() {
         String current = getText();
         if (current.equals(FLAG_TEXT)) {
             setText(INIT_TEXT);
             setBackground(INIT_COLOR);
+            return false;
         } else if (current.equals(INIT_TEXT)) {
             setText(FLAG_TEXT);
             setBackground(FLAG_BG_COLOR);
+            return true;
         }
+        return false;
     }
 
     public void setAfterClick(int bombsAround) {
@@ -57,5 +61,11 @@ public class MineField extends JButton {
             default -> Color.BLACK;
         };
         setForeground(textColor);
+    }
+
+    public void restartField() {
+        setBackground(INIT_COLOR);
+        setText(INIT_TEXT);
+        setForeground(INIT_TEXT_COLOR);
     }
 }
