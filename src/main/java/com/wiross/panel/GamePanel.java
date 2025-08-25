@@ -13,7 +13,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private static final long TIME_COUNT_MAX = 999_999;
     private final JLabel stateLabel;
     private final JLabel timeLabel;
-    private final JLabel foundBombsLabel;
+    private final JLabel leftBombsLabel;
     private final JButton restartButton;
     private final MineBoardView boardView;
     private GameState gameState;
@@ -26,10 +26,15 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public GamePanel() {
         super();
+
+        this.x = 10;
+        this.y = 10;
+        this.bombs = 10;
+
         gameState = GameState.NOT_STARTED;
         stateLabel = new JLabel(gameState.toString());
         timeLabel = new JLabel("Time: 0");
-        foundBombsLabel = new JLabel("Flagged bombs: 0");
+        leftBombsLabel = new JLabel("Bombs not flagged yet: " + bombs);
         restartButton = new JButton("Start");
         restartButton.addActionListener(this);
         boardView = new MineBoardView(this::onGamePanelUpdate);
@@ -43,28 +48,24 @@ public class GamePanel extends JPanel implements ActionListener {
         southBar.add(stateLabel, BorderLayout.CENTER);
         stateLabel.setHorizontalAlignment(SwingConstants.CENTER);
         southBar.add(timeLabel, BorderLayout.EAST);
-        southBar.add(foundBombsLabel, BorderLayout.WEST);
+        southBar.add(leftBombsLabel, BorderLayout.WEST);
         add(southBar, BorderLayout.SOUTH);
 
         JPanel northBar = new JPanel();
         northBar.add(restartButton);
         add(northBar, BorderLayout.NORTH);
-
-        this.x = 10;
-        this.y = 10;
-        this.bombs = 10;
     }
 
     public void onGamePanelUpdate(GamePanelUpdateEvent updateEvent) {
         if (updateEvent instanceof GameState receivedGameState) {
             onGameStateUpdate(receivedGameState);
-        } else if (updateEvent instanceof FlaggedBombsCounterUpdateEvent(int counter)) {
+        } else if (updateEvent instanceof LeftBombsCounterUpdateEvent(int counter)) {
             updateMarkedBombsCounter(counter);
         }
     }
 
     private void updateMarkedBombsCounter(int bombs) {
-        foundBombsLabel.setText("Flagged bombs: " + bombs);
+        leftBombsLabel.setText("Bombs not flagged yet: " + bombs);
     }
 
     private void onGameStateUpdate(GameState gameState) {

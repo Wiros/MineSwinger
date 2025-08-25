@@ -3,7 +3,7 @@ package com.wiross.board;
 import com.wiross.logic.BoardStateHelperImpl;
 import com.wiross.logic.MineBoardState;
 import com.wiross.logic.MineBoardStateImpl;
-import com.wiross.panel.FlaggedBombsCounterUpdateEvent;
+import com.wiross.panel.LeftBombsCounterUpdateEvent;
 import com.wiross.panel.GamePanelUpdateEvent;
 import com.wiross.utilities.RandomProvider;
 
@@ -23,7 +23,7 @@ public class MineBoardView extends JPanel implements MouseListener {
     private int initY;
     private MineBoardState mineBoardState;
     private final Consumer<GamePanelUpdateEvent> gamePanelUpdateConsumer;
-    private int currentBombsFlagged;
+    private int currentBombsUnflagged;
 
     public MineBoardView(Consumer<GamePanelUpdateEvent> gamePanelUpdateConsumer) {
         this(9, 9, 10, gamePanelUpdateConsumer);
@@ -87,11 +87,11 @@ public class MineBoardView extends JPanel implements MouseListener {
                 if (!mineBoardState.getGameState().hasEnded()) {
                     boolean flagSet = mineField.setUnsetFlag();
                     if (flagSet) {
-                        ++currentBombsFlagged;
+                        --currentBombsUnflagged;
                     } else {
-                        --currentBombsFlagged;
+                        ++currentBombsUnflagged;
                     }
-                    gamePanelUpdateConsumer.accept(new FlaggedBombsCounterUpdateEvent(currentBombsFlagged));
+                    gamePanelUpdateConsumer.accept(new LeftBombsCounterUpdateEvent(currentBombsUnflagged));
                 }
             }
         }
@@ -130,7 +130,7 @@ public class MineBoardView extends JPanel implements MouseListener {
         revalidate();
         repaint();
 
-        currentBombsFlagged = 0;
-        gamePanelUpdateConsumer.accept(new FlaggedBombsCounterUpdateEvent(currentBombsFlagged));
+        currentBombsUnflagged = bombs;
+        gamePanelUpdateConsumer.accept(new LeftBombsCounterUpdateEvent(currentBombsUnflagged));
     }
 }
