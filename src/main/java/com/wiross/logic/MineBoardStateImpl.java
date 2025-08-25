@@ -38,10 +38,6 @@ public class MineBoardStateImpl implements MineBoardState {
         stateChangeConsumer.accept(gameState);
     }
 
-    public FieldValue getField(int x, int y) {
-        return listMap.get(initX * y + x);
-    }
-
     @Override
     public Integer countBombsAroundAndUncover(int x, int y) {
         if (! initialized) {

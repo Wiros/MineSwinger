@@ -15,7 +15,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private final JLabel timeLabel;
     private final JLabel foundBombsLabel;
     private final JButton restartButton;
-    private MineBoardView boardView;
+    private final MineBoardView boardView;
     private GameState gameState;
     private long timeCount;
     private Timer timer;
