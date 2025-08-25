@@ -15,10 +15,14 @@ public class GamePanel extends JPanel implements ActionListener {
     private final JLabel timeLabel;
     private final JLabel foundBombsLabel;
     private final JButton restartButton;
-    private final MineBoardView boardView;
+    private MineBoardView boardView;
     private GameState gameState;
     private long timeCount;
     private Timer timer;
+
+    private int x;
+    private int y;
+    private int bombs;
 
     public GamePanel() {
         super();
@@ -45,6 +49,10 @@ public class GamePanel extends JPanel implements ActionListener {
         JPanel northBar = new JPanel();
         northBar.add(restartButton);
         add(northBar, BorderLayout.NORTH);
+
+        this.x = 10;
+        this.y = 10;
+        this.bombs = 10;
     }
 
     public void onGamePanelUpdate(GamePanelUpdateEvent updateEvent) {
@@ -82,8 +90,18 @@ public class GamePanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(restartButton)) {
-            onGameStateUpdate(GameState.NOT_STARTED);
-            boardView.reset(9, 9, 10, this::onGamePanelUpdate);
+            restartGame(x, y, bombs);
         }
+    }
+
+    public void restartGame(int x, int y, int bombs) {
+        this.x = x;
+        this.y = y;
+        this.bombs = bombs;
+        //boardView = new MineBoardView(x, y, bombs, this::onGamePanelUpdate);
+        boardView.reset(x, y, bombs, this::onGamePanelUpdate);
+        onGameStateUpdate(GameState.NOT_STARTED);
+        revalidate();
+        repaint();
     }
 }

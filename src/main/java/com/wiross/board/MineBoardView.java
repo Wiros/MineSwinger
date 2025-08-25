@@ -1,5 +1,6 @@
 package com.wiross.board;
 
+import com.wiross.logic.BoardStateHelperImpl;
 import com.wiross.logic.MineBoardState;
 import com.wiross.logic.MineBoardStateImpl;
 import com.wiross.panel.FlaggedBombsCounterUpdateEvent;
@@ -18,8 +19,8 @@ import java.util.stream.IntStream;
 public class MineBoardView extends JPanel implements MouseListener {
     private final int limitOnCheckingEmpty;
     private List<MineField> mineFields;
-    private final int initX;
-    private final int initY;
+    private int initX;
+    private int initY;
     private MineBoardState mineBoardState;
     private final Consumer<GamePanelUpdateEvent> gamePanelUpdateConsumer;
     private int currentBombsFlagged;
@@ -35,11 +36,14 @@ public class MineBoardView extends JPanel implements MouseListener {
         this.limitOnCheckingEmpty = 2 * (x + y);
         this.gamePanelUpdateConsumer = gamePanelUpdateConsumer;
 
-        initField(x, y);
         reset(x, y, bombs, gamePanelUpdateConsumer);
     }
 
     private void initField(int x, int y) {
+        removeAll();
+        if (null != mineFields) {
+            mineFields.clear();
+        }
         this.mineFields = new ArrayList<>(x * y);
 
         IntStream.range(0, x).forEach(nx ->
@@ -59,6 +63,8 @@ public class MineBoardView extends JPanel implements MouseListener {
         if (!mineBoardState.getGameState().hasEnded() && mineField.wasClickedBeforeOrChecked()) {
             int bombsAround = mineBoardState.countBombsAroundAndUncover(x, y);
             mineField.setAfterClick(bombsAround);
+
+            System.out.println("Clicked: " + bombsAround);
 
             if (0 == bombsAround && checkNumber < limitOnCheckingEmpty) {
                 for (int a = x - 1; a < x + 2; ++a) {
@@ -113,8 +119,17 @@ public class MineBoardView extends JPanel implements MouseListener {
 
     public void reset(int x, int y, int bombs, Consumer<GamePanelUpdateEvent> stateChangeConsumer) {
         System.out.println("MineBoardView.reset()");
-        mineBoardState = new MineBoardStateImpl(x, y, bombs, stateChangeConsumer, new RandomProvider());
-        mineFields.forEach(MineField::restartField);
+        mineBoardState = new MineBoardStateImpl(x, y, bombs, stateChangeConsumer,
+                new RandomProvider(), new BoardStateHelperImpl(x, y));
+
+        initX = x;
+        initY = y;
+
+        initField(x, y);
+
+        revalidate();
+        repaint();
+
         currentBombsFlagged = 0;
         gamePanelUpdateConsumer.accept(new FlaggedBombsCounterUpdateEvent(currentBombsFlagged));
     }

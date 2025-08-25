@@ -10,9 +10,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class MineBoardStateImpl implements MineBoardState {
+    private final BoardStateHelper boardStateHelper;
     private final RandomProvider randomProvider;
     private final List<FieldValue> listMap = new ArrayList<>();
-    private final List<Integer> countMap = new ArrayList<>();
+    private List<Integer> countMap = new ArrayList<>();
     private final int initX;
     private final int initY;
     private final int initBombs;
@@ -21,7 +22,10 @@ public class MineBoardStateImpl implements MineBoardState {
     private GameState gameState;
     boolean initialized;
 
-    public MineBoardStateImpl(int x, int y, int bombs, Consumer<GamePanelUpdateEvent> stateChangeConsumer, RandomProvider randomProvider) {
+    public MineBoardStateImpl(int x, int y, int bombs,
+                              Consumer<GamePanelUpdateEvent> stateChangeConsumer,
+                              RandomProvider randomProvider, BoardStateHelper boardStateHelper) {
+        this.boardStateHelper = boardStateHelper;
         this.initX = x;
         this.initY = y;
         this.initBombs = bombs;
@@ -54,37 +58,34 @@ public class MineBoardStateImpl implements MineBoardState {
     }
 
     private void initializeBoardWithClick(int x, int y) {
+        System.out.println("Clicked on x: " + x + ", y: " + y);
         List<Integer> intList = IntStream.range(0, initX * initY).boxed().collect(Collectors.toList());
+        System.out.println("intList: " + intList);
         intList = randomProvider.shuffle(intList);
+        System.out.println("intList shuffled: " + intList);
         List<Integer> bombList;
 
         if (initX * initY < 9 + initBombs) {
             bombList = intList.stream().limit(initBombs).sorted().toList();
         } else {
-            bombList = intList.stream().filter(number -> !isAround(x, y, number)).limit(initBombs).sorted().toList();
+            bombList = intList.stream()
+                    .filter(number -> ! boardStateHelper.isAround(x, y, number))
+                    .limit(initBombs).sorted()
+                    .toList();
         }
+        System.out.println("bombList: " + bombList);
 
         IntStream.range(0, initX * initY)
                 .mapToObj(n -> bombList.contains(n) ? FieldValue.BOMB : FieldValue.EMPTY)
                 .forEach(listMap::add);
-        IntStream.range(0, initX).forEach(nx ->
-                IntStream.range(0, initY).forEach(ny ->
-                        countMap.add(countBombsAround(nx, ny))
-                )
-        );
+
+        countMap = boardStateHelper.calculateBombCounters(bombList);
+
+        System.out.println(countMap);
+        System.out.println(listMap);
     }
 
-    public boolean isAround(int x, int y, int number) {
-        return initX * y + x == number ||
-                initX * (y - 1) + x == number ||
-                initX * (y + 1) + x == number ||
-                initX * y + (x - 1) == number ||
-                initX * y + (x + 1) == number ||
-                initX * (y - 1) + (x - 1) == number ||
-                initX * (y - 1) + (x + 1) == number ||
-                initX * (y + 1) + (x - 1) == number ||
-                initX * (y + 1) + (x + 1) == number;
-    }
+
 
     private void updateGameStateUncoveredBomb(boolean uncoveredBomb) {
         GameState previousState = gameState;
@@ -110,23 +111,5 @@ public class MineBoardStateImpl implements MineBoardState {
     @Override
     public GameState getGameState() {
         return gameState;
-    }
-
-    private Integer countBombsAround(int x, int y) {
-        if (getField(x, y) == FieldValue.BOMB) {
-            return -1;
-        }
-        int bombs = 0;
-        for (int a = x - 1; a < x + 2; ++a) {
-            for (int b = y - 1; b < y + 2; ++b) {
-                if (a >= 0 && b >= 0 && a < initX && b < initY) {
-                    if (getField(a, b) == FieldValue.BOMB) {
-                        ++bombs;
-                    }
-                }
-            }
-        }
-
-        return bombs;
     }
 }
