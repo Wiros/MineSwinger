@@ -60,7 +60,8 @@ public class MineBoardView extends JPanel implements MouseListener {
 
 
     private void clickedOnField(int x, int y, MineField mineField, int checkNumber) {
-        if (!mineBoardState.getGameState().hasEnded() && mineField.wasClickedBeforeOrChecked()) {
+        if (!mineBoardState.getGameState().hasEnded() && mineField.wasClickedBeforeOrChecked()
+            && !mineField.isFlagged()) {
             int bombsAround = mineBoardState.countBombsAroundAndUncover(x, y);
             mineField.setAfterClick(bombsAround);
 
@@ -85,16 +86,24 @@ public class MineBoardView extends JPanel implements MouseListener {
                 clickedOnField(mineField.getXPos(), mineField.getYPos(), mineField, 0);
             } else if (SwingUtilities.isRightMouseButton(e)) {
                 if (!mineBoardState.getGameState().hasEnded()) {
-                    boolean flagSet = mineField.setUnsetFlag();
-                    if (flagSet) {
-                        --currentBombsUnflagged;
-                    } else {
-                        ++currentBombsUnflagged;
-                    }
-                    gamePanelUpdateConsumer.accept(new LeftBombsCounterUpdateEvent(currentBombsUnflagged));
+                    handleFlagging(mineField);
                 }
             }
         }
+    }
+
+    private void handleFlagging(MineField mineField) {
+        boolean flagSet = mineField.setUnsetFlag();
+        if (flagSet) {
+            if (currentBombsUnflagged == 0) {
+                mineField.setUnsetFlag();
+            } else {
+                --currentBombsUnflagged;
+            }
+        } else {
+            ++currentBombsUnflagged;
+        }
+        gamePanelUpdateConsumer.accept(new LeftBombsCounterUpdateEvent(currentBombsUnflagged));
     }
 
     @Override

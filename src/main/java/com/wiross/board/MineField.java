@@ -68,4 +68,8 @@ public class MineField extends JButton {
         setText(INIT_TEXT);
         setForeground(INIT_TEXT_COLOR);
     }
+
+    public boolean isFlagged() {
+        return getText().equals(FLAG_TEXT);
+    }
 }
