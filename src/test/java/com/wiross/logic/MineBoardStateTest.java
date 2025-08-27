@@ -68,14 +68,59 @@ class MineBoardStateTest {
 
         // THEN
         assertEquals(0, result, "First click shall be empty if possible.");
-    }
-
-    @Test
-    void countBombsAroundAndUncover() {
+        assertEquals(GameState.IN_PROGRESS, mineBoardState.getGameState());
     }
 
 
     @Test
-    void getGameState() {
+    void Should_Get_Not_Started_Before_Click() {
+        // GIVEN
+        // WHEN
+        var result = mineBoardState.getGameState();
+
+        // THEN
+        assertEquals(GameState.NOT_STARTED, result);
+    }
+
+    @Test
+    void Should_Get_Game_Lost_On_Bomb_Click() {
+        // GIVEN
+        boardStateHelper = new BoardStateHelperImpl(3, 3);
+        mineBoardState = new MineBoardStateImpl(3, 3, 1, gamePanelUpdater, randomProvider, boardStateHelper);
+        when(randomProvider.shuffle((List<Integer>)any())).thenReturn(
+                new ArrayList<>(List.of(0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 15)));
+
+        // WHEN
+        GameState stateResult_0 = mineBoardState.getGameState();
+        int result_1 = mineBoardState.countBombsAroundAndUncover(2, 2);
+        GameState stateResult_1 = mineBoardState.getGameState();
+        int result_2 = mineBoardState.countBombsAroundAndUncover(0, 0);
+        GameState stateResult_2 = mineBoardState.getGameState();
+
+        // THEN
+        assertEquals(0, result_1, "First click shall be empty if possible.");
+        assertEquals(-1, result_2, "Bomb click shall return -1.");
+        assertEquals(GameState.NOT_STARTED, stateResult_0);
+        assertEquals(GameState.IN_PROGRESS, stateResult_1);
+        assertEquals(GameState.LOST, stateResult_2);
+    }
+
+    @Test
+    void Should_Get_Game_Won_On_All_Fields_Clicked() {
+        // GIVEN
+        boardStateHelper = new BoardStateHelperImpl(2, 1);
+        mineBoardState = new MineBoardStateImpl(2, 1, 1, gamePanelUpdater, randomProvider, boardStateHelper);
+        when(randomProvider.shuffle((List<Integer>)any())).thenReturn(
+                new ArrayList<>(List.of(0)));
+
+        // WHEN
+        GameState stateResult_0 = mineBoardState.getGameState();
+        int result_1 = mineBoardState.countBombsAroundAndUncover(1, 0);
+        GameState stateResult_1 = mineBoardState.getGameState();
+
+        // THEN
+        assertEquals(1, result_1, "First click is near one bomb.");
+        assertEquals(GameState.NOT_STARTED, stateResult_0);
+        assertEquals(GameState.WON, stateResult_1);
     }
 }

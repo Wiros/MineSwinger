@@ -2,6 +2,8 @@ package com.wiross.logic;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.List;
 
@@ -41,14 +43,34 @@ public class BoardStateHelperTest {
         assertTrue(result);
     }
 
-    @Test
-    void Should_Find_Around_Close() {
+    private static List<Integer> getCloseValues() {
+        return List.of(0, 1, 2, 3, 4, 5, 6, 7, 8);
+    }
+    @ParameterizedTest
+    @MethodSource("getCloseValues")
+    void Should_Find_Around_Close(Integer value) {
         // GIVEN
+        boardStateHelper = new BoardStateHelperImpl(3, 4);
 
         // WHEN
-        boolean result = boardStateHelper.isAround(1, 1, 0);
+        boolean result = boardStateHelper.isAround(1, 1, value);
         // THEN
         assertTrue(result);
+    }
+
+    private static List<Integer> getAwayValues() {
+        return List.of(9, 10, 11);
+    }
+    @ParameterizedTest
+    @MethodSource("getAwayValues")
+    void Should_Find_Away_Not_Close(Integer value) {
+        // GIVEN
+        boardStateHelper = new BoardStateHelperImpl(3, 4);
+
+        // WHEN
+        boolean result = boardStateHelper.isAround(1, 1, value);
+        // THEN
+        assertFalse(result);
     }
 
     @Test
